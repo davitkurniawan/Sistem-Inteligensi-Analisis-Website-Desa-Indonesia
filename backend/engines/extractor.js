@@ -1,0 +1,114 @@
+// Web Detector CMS - Backend Engine: Extractor
+const cheerio = require('cheerio');
+
+class VillageExtractor {
+    constructor(html, url) {
+        this.html = html;
+        this.url = url;
+        this.$ = cheerio.load(html);
+    }
+
+    extractAll() {
+        return {
+            nama_desa: this.extractNamaDesa(),
+            kepala_desa: this.extractKepalaDesa(),
+            kontak: this.extractKontak(),
+            email: this.extractEmail(),
+            jumlah_penduduk: this.extractJumlahPenduduk(),
+            alamat: this.extractAlamat()
+        };
+    }
+
+    extractNamaDesa() {
+        const patterns = [
+            /desa\s+([a-z\s]+)[,\s]*kecamatan/i,
+            /pemerintah\s+desa\s+([a-z\s]+)/i,
+            /kantor\s+desa\s+([a-z\s]+)/i,
+            /profil\s+desa\s+([a-z\s]+)/i,
+            /desa\s+([a-z\s]+)\s*\|\s*/i
+        ];
+
+        for (const pattern of patterns) {
+            const match = this.html.match(pattern);
+            if (match) return match[1].trim();
+        }
+
+        const title = this.$('title').text();
+        if (title) {
+            // Look for "Desa [Name]" in title
+            const titleMatch = title.match(/desa\s+([a-z\s]+)/i);
+            if (titleMatch) return titleMatch[1].trim();
+            return title.trim();
+        }
+        return null;
+    }
+
+    extractKepalaDesa() {
+        const patterns = [
+            /kepala\s+desa[:\s]+([a-z\s\.]+)/i,
+            /kades[:\s]+([a-z\s\.]+)/i,
+            /bapak\s+([a-z\s\.]+)[,\s]*kepala\s+desa/i,
+            /ibu\s+([a-z\s\.]+)[,\s]*kepala\s+desa/i
+        ];
+
+        for (const pattern of patterns) {
+            const match = this.html.match(pattern);
+            if (match) return match[1].trim();
+        }
+        return null;
+    }
+
+    extractKontak() {
+        const phones = [];
+        const patterns = [
+            /(\+62[\s\d-]{8,15})/,
+            /(0[8][\s\d-]{8,12})/,
+            /(08\d{8,11})/,
+            /telp[\.:]?\s*(\d[\d\s-]{6,})/i,
+            /hp[\.:]?\s*(\d[\d\s-]{6,})/i,
+            /wa[\.:]?\s*(\d[\d\s-]{6,})/i
+        ];
+
+        for (const pattern of patterns) {
+            const matches = this.html.match(new RegExp(pattern, 'gi'));
+            if (matches) phones.push(...matches);
+        }
+        return [...new Set(phones)].slice(0, 3);
+    }
+
+    extractEmail() {
+        const pattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+        const emails = this.html.match(pattern);
+        return emails ? [...new Set(emails)].slice(0, 2) : [];
+    }
+
+    extractJumlahPenduduk() {
+        const patterns = [
+            /jumlah\s+penduduk[:\s]+(\d[\d\.,]*)/i,
+            /penduduk[:\s]+(\d[\d\.,]*)\s*(jiwa|orang)/i,
+            /total\s+penduduk[:\s]+(\d[\d\.,]*)/i
+        ];
+
+        for (const pattern of patterns) {
+            const match = this.html.match(pattern);
+            if (match) return match[1].replace(/[.,]/g, '');
+        }
+        return null;
+    }
+
+    extractAlamat() {
+        const patterns = [
+            /alamat\s+kantor\s+desa[:\s]+([^<]{10,100})/i,
+            /alamat[:\s]+([^<]{10,100})/i,
+            /lokasi\s+kantor[:\s]+([^<]{10,100})/i
+        ];
+
+        for (const pattern of patterns) {
+            const match = this.html.match(pattern);
+            if (match) return match[1].trim();
+        }
+        return null;
+    }
+}
+
+module.exports = VillageExtractor;

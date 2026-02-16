@@ -1,0 +1,198 @@
+/* Web Detector CMS - Global Styles */
+* {
+    font-family: 'Inter', sans-serif;
+}
+
+.mono {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Map Container */
+#map {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+/* Glassmorphism Effects */
+.glass {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-light {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Custom Marker Pulse */
+.marker-pulse {
+    animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.33);
+        opacity: 1;
+    }
+
+    80%,
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+/* Scanning Animation */
+.scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #10b981, transparent);
+    animation: scan 2s linear infinite;
+    display: none;
+}
+
+@keyframes scan {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(60px);
+    }
+}
+
+.scanning .scan-line {
+    display: block;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.5);
+    border-radius: 4px;
+}
+
+/* Result Card Animation */
+.result-card {
+    transform: translateX(100%);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.result-card.show {
+    transform: translateX(0);
+}
+
+/* Input Focus Glow */
+.input-glow:focus {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+}
+
+/* Status Badges */
+.badge-safe {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-dangerous {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-critical {
+    background: rgba(124, 58, 237, 0.2);
+    color: #7c3aed;
+    border: 1px solid rgba(124, 58, 237, 0.3);
+}
+
+/* Floating Particles */
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(16, 185, 129, 0.6);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: float 10s infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-100vh) translateX(100px);
+        opacity: 0;
+    }
+}
+
+/* Grid Overlay */
+.grid-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(rgba(16, 185, 129, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(16, 185, 129, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Typing Effect */
+.typing::after {
+    content: '|';
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+
+    0%,
+    50% {
+        opacity: 1;
+    }
+
+    51%,
+    100% {
+        opacity: 0;
+    }
+}
