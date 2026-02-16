@@ -118,8 +118,8 @@ function App() {
             const iconHtml = `
             <div class="relative">
                 <div class="marker-pulse absolute inset-0 bg-emerald-500 rounded-full opacity-75"></div>
-                <div class="relative w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
-                    <i class="fas fa-home text-white text-sm"></i>
+                <div class="relative w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full border-2 border-white shadow-2xl flex items-center justify-center">
+                    <i class="fas fa-home text-white text-lg"></i>
                 </div>
             </div>
         `;
@@ -127,13 +127,30 @@ function App() {
             const customIcon = L.divIcon({
                 html: iconHtml,
                 className: 'custom-marker',
-                iconSize: [40, 40],
-                iconAnchor: [20, 20]
+                iconSize: [48, 48],
+                iconAnchor: [24, 24]
             });
+
+            const statusColor = mockResults.security.status === 'safe' ? '#10b981' : '#f59e0b';
+            const popupHtml = `
+                <div style="font-family: 'Inter', sans-serif; padding: 5px; min-width: 180px;">
+                    <h4 style="margin: 0 0 5px 0; color: #1e293b; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">${mockResults.wilayah.nama_desa}</h4>
+                    <div style="font-size: 11px; color: #64748b; line-height: 1.4;">
+                        <p style="margin: 2px 0;"><strong>Kecamatan:</strong> ${mockResults.wilayah.kecamatan}</p>
+                        <p style="margin: 2px 0;"><strong>Kabupaten:</strong> ${mockResults.wilayah.kabupaten}</p>
+                        <p style="margin: 8px 0 0 0; display: flex; align-items: center; gap: 4px;">
+                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor};"></span>
+                            <strong style="color: ${statusColor}; text-transform: uppercase;">STATUS: ${mockResults.security.status}</strong>
+                        </p>
+                    </div>
+                </div>
+            `;
 
             currentMarkerRef.current = L.marker([mockResults.wilayah.lat, mockResults.wilayah.lng], {
                 icon: customIcon
-            }).addTo(mapRef.current);
+            }).addTo(mapRef.current)
+                .bindPopup(popupHtml, { closeButton: false, offset: [0, -10] })
+                .openPopup();
         }
     };
 
