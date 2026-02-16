@@ -29,7 +29,29 @@ function App() {
             // Add Lampung Sample Markers
             addSampleMarkers(L);
         }
+
+        const handleEsc = (event) => {
+            if (event.key === 'Escape') {
+                resetSearch();
+            }
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
     }, []);
+
+    const resetSearch = () => {
+        setShowResults(false);
+        setResults(null);
+        setIsScanning(false);
+        setUrl('');
+        if (mapRef.current) {
+            mapRef.current.flyTo([-4.85, 105.0], 8, { duration: 1.5 });
+            if (currentMarkerRef.current) {
+                mapRef.current.removeLayer(currentMarkerRef.current);
+                currentMarkerRef.current = null;
+            }
+        }
+    };
 
     const addSampleMarkers = (L) => {
         const sampleLocations = [
@@ -91,7 +113,7 @@ function App() {
             const L = window.L;
             if (currentMarkerRef.current) mapRef.current.removeLayer(currentMarkerRef.current);
 
-            mapRef.current.flyTo([mockResults.wilayah.lat, mockResults.wilayah.lng], 13, { duration: 2 });
+            mapRef.current.flyTo([mockResults.wilayah.lat, mockResults.wilayah.lng], 14, { duration: 2 });
 
             const iconHtml = `
             <div class="relative">
@@ -187,6 +209,15 @@ function App() {
                         <p className="text-xs text-slate-400">Sistem Inteligensi Analisis Website Desa Indonesia</p>
                     </div>
                 </div>
+                {showResults && (
+                    <button
+                        onClick={resetSearch}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800/50 border border-slate-700 hover:bg-slate-700 transition-all text-sm text-slate-300"
+                    >
+                        <kbd className="px-1.5 py-0.5 rounded bg-slate-700 text-[10px] font-mono border border-slate-600">ESC</kbd>
+                        <span>Kembali Cari</span>
+                    </button>
+                )}
                 <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                     <span className="text-xs text-slate-300">Database: <span class="text-emerald-400 font-mono">74,986</span> Desa</span>
@@ -194,53 +225,55 @@ function App() {
             </header>
 
             <main className="flex-1 flex items-center justify-center p-6 relative">
-                <div
-                    id="inputDialog"
-                    className={`glass rounded-2xl p-8 max-w-2xl w-full shadow-2xl shadow-black/50 transform transition-all duration-500 ${isScanning ? 'scanning' : ''}`}
-                    style={showResults ? { transform: 'scale(0.8) translate(-40%, -40%)', opacity: 0.8 } : {}}
-                >
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-600/20 border border-emerald-500/30 mb-4">
-                            <i className="fas fa-search-location text-3xl text-emerald-400"></i>
-                        </div>
-                        <h2 className="text-2xl font-bold mb-2">Deteksi Website Desa</h2>
-                        <p className="text-slate-400 text-sm">Masukkan URL domain website desa untuk analisis mendalam</p>
-                    </div>
-
-                    <div className="relative mb-6">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i className="fas fa-globe text-slate-500"></i>
-                        </div>
-                        <input
-                            type="text"
-                            className="w-full pl-11 pr-32 py-4 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none input-glow transition-all mono text-sm"
-                            placeholder="https://desacontoh.desa.id"
-                            value={url}
-                            onChange={(e) => setUrl(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && startDetection()}
-                        />
-                        <div className="absolute inset-y-0 right-2 flex items-center">
-                            <button
-                                onClick={startDetection}
-                                disabled={isScanning}
-                                className="px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-medium rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/25 flex items-center gap-2"
-                            >
-                                {isScanning ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-radar"></i>}
-                                <span>{isScanning ? 'Scanning...' : 'Detect'}</span>
-                            </button>
-                        </div>
-                        <div className="scan-line"></div>
-                    </div>
-
-                    {isScanning && (
-                        <div className="mt-6 text-center">
-                            <div className="flex items-center justify-center gap-3 text-emerald-400">
-                                <div className="w-5 h-5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin"></div>
-                                <span className="text-sm font-medium typing">{loadingText}</span>
+                {/* Input Dialog - Hidden when results are shown */}
+                {!showResults && (
+                    <div
+                        id="inputDialog"
+                        className={`glass rounded-2xl p-8 max-w-2xl w-full shadow-2xl shadow-black/50 transform transition-all duration-500 ${isScanning ? 'scanning scale-95 opacity-50' : 'opacity-100 scale-100'}`}
+                    >
+                        <div className="text-center mb-8">
+                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-600/20 border border-emerald-500/30 mb-4">
+                                <i className="fas fa-search-location text-3xl text-emerald-400"></i>
                             </div>
+                            <h2 className="text-2xl font-bold mb-2">Deteksi Website Desa</h2>
+                            <p className="text-slate-400 text-sm">Masukkan URL domain website desa untuk analisis mendalam</p>
                         </div>
-                    )}
-                </div>
+
+                        <div className="relative mb-6">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i className="fas fa-globe text-slate-500"></i>
+                            </div>
+                            <input
+                                type="text"
+                                className="w-full pl-11 pr-32 py-4 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none input-glow transition-all mono text-sm"
+                                placeholder="https://desacontoh.desa.id"
+                                value={url}
+                                onChange={(e) => setUrl(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && startDetection()}
+                            />
+                            <div className="absolute inset-y-0 right-2 flex items-center">
+                                <button
+                                    onClick={startDetection}
+                                    disabled={isScanning}
+                                    className="px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-medium rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/25 flex items-center gap-2"
+                                >
+                                    {isScanning ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-radar"></i>}
+                                    <span>{isScanning ? 'Scanning...' : 'Detect'}</span>
+                                </button>
+                            </div>
+                            {isScanning && <div className="scan-line"></div>}
+                        </div>
+
+                        {isScanning && (
+                            <div className="mt-6 text-center">
+                                <div className="flex items-center justify-center gap-3 text-emerald-400">
+                                    <div className="w-5 h-5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin"></div>
+                                    <span className="text-sm font-medium typing">{loadingText}</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {results && (
                     <div id="resultsPanel" className={`result-card fixed right-0 top-16 bottom-0 w-full md:w-[480px] glass border-l border-slate-700/50 overflow-y-auto z-30 ${showResults ? 'show' : ''}`}>
