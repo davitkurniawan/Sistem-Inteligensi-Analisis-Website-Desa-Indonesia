@@ -117,35 +117,56 @@ function App() {
 
     const generateMockResults = (inputUrl) => {
         const domain = inputUrl.replace('https://', '').replace('http://', '').split('/')[0];
+        const sub = domain.split('.')[0];
+
+        // Dynamic Village Name Extraction
+        const rawName = sub.charAt(0).toUpperCase() + sub.slice(1);
+        const villageName = `Desa ${rawName}`;
+
+        // Coordinate Mapping for Lampung Villages (Simulated Database)
+        const locationMap = {
+            'bumidaya': { lat: -5.7329, lng: 105.5908, kec: 'Kecamatan Palas', kab: 'Kabupaten Lampung Selatan' },
+            'tulusrejo': { lat: -5.0234, lng: 105.2123, kec: 'Kecamatan Pekalongan', kab: 'Kabupaten Lampung Timur' },
+            'sukarame': { lat: -5.3852, lng: 105.2974, kec: 'Kecamatan Sukarame', kab: 'Kota Bandar Lampung' },
+            'pahoman': { lat: -5.4297, lng: 105.2619, kec: 'Kecamatan Enggal', kab: 'Kota Bandar Lampung' }
+        };
+
+        const loc = locationMap[sub.toLowerCase()] || {
+            lat: -5.0 + (Math.random() - 0.5) * 1.5,
+            lng: 105.2 + (Math.random() - 0.5) * 1.5,
+            kec: 'Kecamatan Terdeteksi',
+            kab: 'Kabupaten Lampung (Simulasi)'
+        };
+
         return {
             url: inputUrl,
             domain: domain,
-            ip: '103.129.221.47',
+            ip: `103.129.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
             timestamp: new Date().toLocaleString('id-ID'),
             wilayah: {
-                nama_desa: 'Desa Sukarame',
-                kecamatan: 'Kecamatan Sukarame',
-                kabupaten: 'Kota Bandar Lampung',
+                nama_desa: villageName,
+                kecamatan: loc.kec,
+                kabupaten: loc.kab,
                 provinsi: 'Lampung',
-                lat: -5.3852,
-                lng: 105.2974
+                lat: loc.lat,
+                lng: loc.lng
             },
             cms: {
-                name: 'Metadesa (Smart Village)',
-                version: '2.0.1',
-                confidence: 94,
+                name: 'OpenSID Premium',
+                version: '24.01-LTS',
+                confidence: 96,
                 category: 'Government'
             },
             security: {
-                score: 92,
+                score: 88,
                 status: 'safe',
                 vulnerabilities: []
             },
             extracted: {
-                kepala_desa: 'Bapak Maryanto',
-                telepon: '0813-7766-xxxx',
+                kepala_desa: 'Bapak ' + ['Sutrisno', 'Budianto', 'Maryanto', 'Hasan'][Math.floor(Math.random() * 4)],
+                telepon: '0812-77xx-xxxx',
                 email: `admin@${domain}`,
-                jumlah_penduduk: '6,782 jiwa'
+                jumlah_penduduk: (4000 + Math.floor(Math.random() * 3000)) + ' jiwa'
             }
         };
     };
