@@ -9,15 +9,14 @@ const CMS_DATABASE = [
             headers: ["X-OpenSID", "OpenSID"],
             meta: [{ name: "generator", content: "OpenSID" }],
             body_patterns: [
-                /opensid/i,
-                /berputar\.opendesa\.id/i,
-                /demosid\.opendesa\.id/i,
                 /class="opensid"/i,
                 /id="opensid"/i,
                 /\/assets\/opensid\//i,
                 /\/themes\/opensid\//i,
-                /sid304/i, // Default password hint
-                /siteman/i // Admin path
+                /sid304/i, 
+                /siteman/i,
+                /OpenSID\s+v?[\d.]+/i,
+                /opendesa\.id/i
             ],
             url_patterns: [
                 "/index.php/siteman",
@@ -39,11 +38,24 @@ const CMS_DATABASE = [
             body_patterns: [
                 /sipdeskel/i,
                 /sistem informasi pemerintahan desa kelurahan/i,
-                /sipdeskel\.desa\.id/i
+                /sipdeskel\.desa\.id/i,
+                /sso\.sipdeskel\.id/i,
+                /presensia\.sipdeskel\.id/i,
+                /copyright.*sipdeskel/i,
+                /kebijakan privasi.*sipdeskel/i,
+                /sipdeskel\s+©\s+20\d{2}/i,
+                /powered\s+by\s+sipdeskel/i,
+                /v\d{2}\.\d{2}\.\d+\.\d+/ // SIPDeskel version format like V24.12.1.1
             ],
-            url_patterns: ["/sipdeskel/", "/admin-sipdeskel/"]
+            url_patterns: [
+                "/home/home.aspx",
+                "/pages/monograph/monograph-village-profile.aspx",
+                "/articles/artikel.aspx",
+                "/sipdeskel/",
+                "/admin-sipdeskel/"
+            ]
         },
-        confidence: 90,
+        confidence: 98,
         category: "Commercial"
     },
     {
@@ -55,11 +67,12 @@ const CMS_DATABASE = [
                 /digides/i,
                 /digitaldesa\.id/i,
                 /digital desa indonesia/i,
-                /pt digital desa indonesia/i
+                /pt digital desa indonesia/i,
+                /copyright.*digital desa/i
             ],
             url_patterns: ["/digides/", "/digitaldesa/", "/api/digides/"]
         },
-        confidence: 92,
+        confidence: 94,
         category: "Commercial"
     },
     {
@@ -69,11 +82,13 @@ const CMS_DATABASE = [
             body_patterns: [
                 /metadesa/i,
                 /it provinsi lampung/i,
-                /smart village lampung/i
+                /smart village lampung/i,
+                /metamart/i,
+                /geometa/i
             ],
-            url_patterns: ["/metadesa/", "/smartvillage/"]
+            url_patterns: ["/metadesa/", "/smartvillage/", "/menu/metamart.aspx"]
         },
-        confidence: 88,
+        confidence: 92,
         category: "Government"
     },
     {

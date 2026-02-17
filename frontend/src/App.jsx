@@ -18,7 +18,7 @@ function App() {
                 attributionControl: false
             }).setView([-4.85, 105.0], 8); // Lampung Focus
 
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
                 subdomains: 'abcd',
                 maxZoom: 19
@@ -156,10 +156,17 @@ function App() {
 
     const generateMockResults = (inputUrl) => {
         const domain = inputUrl.replace('https://', '').replace('http://', '').split('/')[0];
-        const sub = domain.split('.')[0];
+        const sub = domain.split('.')[0].toLowerCase();
 
-        // Dynamic Village Name Extraction
-        const rawName = sub.charAt(0).toUpperCase() + sub.slice(1);
+        let villagePart = sub;
+        let kabHint = null;
+        if (sub.includes('-')) {
+            const parts = sub.split('-');
+            villagePart = parts[0];
+            kabHint = parts[1];
+        }
+
+        const rawName = villagePart.charAt(0).toUpperCase() + villagePart.slice(1);
         const villageName = `Desa ${rawName}`;
 
         // Coordinate Mapping for Lampung Villages (Simulated Database)
@@ -167,15 +174,23 @@ function App() {
             'bumidaya': { lat: -5.7329, lng: 105.5908, kec: 'Kecamatan Palas', kab: 'Kabupaten Lampung Selatan' },
             'tulusrejo': { lat: -5.0234, lng: 105.2123, kec: 'Kecamatan Pekalongan', kab: 'Kabupaten Lampung Timur' },
             'sukarame': { lat: -5.3852, lng: 105.2974, kec: 'Kecamatan Sukarame', kab: 'Kota Bandar Lampung' },
-            'pahoman': { lat: -5.4297, lng: 105.2619, kec: 'Kecamatan Enggal', kab: 'Kota Bandar Lampung' }
+            'pahoman': { lat: -5.4297, lng: 105.2619, kec: 'Kecamatan Enggal', kab: 'Kota Bandar Lampung' },
+            'madaraya': { lat: -5.2034, lng: 104.9123, kec: 'Kecamatan Pagelaran Utara', kab: 'Kabupaten Pringsewu' },
+            'sukoharjo': { lat: -5.2542, lng: 104.9876, kec: 'Kecamatan Sukoharjo', kab: 'Kabupaten Pringsewu' }
         };
 
-        const loc = locationMap[sub.toLowerCase()] || {
-            lat: -5.0 + (Math.random() - 0.5) * 1.5,
-            lng: 105.2 + (Math.random() - 0.5) * 1.5,
-            kec: 'Kecamatan Terdeteksi',
-            kab: 'Kabupaten Lampung (Simulasi)'
+        const loc = locationMap[villagePart] || {
+            lat: kabHint === 'pringsewu' ? -5.2 + (Math.random() - 0.5) * 0.2 : -5.0 + (Math.random() - 0.5) * 1.5,
+            lng: kabHint === 'pringsewu' ? 104.9 + (Math.random() - 0.5) * 0.2 : 105.2 + (Math.random() - 0.5) * 1.5,
+            kec: kabHint === 'pringsewu' ? 'Kecamatan di Pringsewu' : 'Kecamatan Terdeteksi',
+            kab: kabHint === 'pringsewu' ? 'Kabupaten Pringsewu' : 'Kabupaten Lampung (Simulasi)'
         };
+
+        // CMS Logic
+        let cmsName = 'OpenSID Premium';
+        if (sub.includes('pringsewu') || sub.includes('tulusrejo') || sub.includes('bumidaya')) {
+            cmsName = 'SIPDeskel';
+        }
 
         return {
             url: inputUrl,
@@ -191,8 +206,8 @@ function App() {
                 lng: loc.lng
             },
             cms: {
-                name: 'OpenSID Premium',
-                version: '24.01-LTS',
+                name: cmsName,
+                version: cmsName === 'SIPDeskel' ? '2.4.0' : '24.01-LTS',
                 confidence: 96,
                 category: 'Government'
             },
@@ -237,7 +252,7 @@ function App() {
                 )}
                 <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                    <span className="text-xs text-slate-300">Database: <span class="text-emerald-400 font-mono">74,986</span> Desa</span>
+                    <span className="text-xs text-slate-300">Database: <span className="text-emerald-400 font-mono">74,986</span> Desa</span>
                 </div>
             </header>
 
@@ -246,7 +261,7 @@ function App() {
                 {!showResults && (
                     <div
                         id="inputDialog"
-                        className={`glass rounded-2xl p-8 max-w-2xl w-full shadow-2xl shadow-black/50 transform transition-all duration-500 ${isScanning ? 'scanning scale-95 opacity-50' : 'opacity-100 scale-100'}`}
+                        className={`glass rounded-2xl p-8 max-w-2xl w-full shadow-2xl shadow-black/50 transform transition-all duration-500 ${isScanning ? 'scanning opacity-50' : 'opacity-100 scale-100'}`}
                     >
                         <div className="text-center mb-8">
                             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-600/20 border border-emerald-500/30 mb-4">

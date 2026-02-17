@@ -11,6 +11,9 @@ class VillageExtractor {
     extractAll() {
         return {
             nama_desa: this.extractNamaDesa(),
+            kecamatan: this.extractKecamatan(),
+            kabupaten: this.extractKabupaten(),
+            provinsi: this.extractProvinsi(),
             kepala_desa: this.extractKepalaDesa(),
             kontak: this.extractKontak(),
             email: this.extractEmail(),
@@ -21,11 +24,11 @@ class VillageExtractor {
 
     extractNamaDesa() {
         const patterns = [
-            /desa\s+([a-z\s]+)[,\s]*kecamatan/i,
-            /pemerintah\s+desa\s+([a-z\s]+)/i,
-            /kantor\s+desa\s+([a-z\s]+)/i,
-            /profil\s+desa\s+([a-z\s]+)/i,
-            /desa\s+([a-z\s]+)\s*\|\s*/i
+            /(?:desa|pekon)\s+([a-z\s]+)[,\s]*kecamatan/i,
+            /pemerintah\s+(?:desa|pekon)\s+([a-z\s]+)/i,
+            /kantor\s+(?:desa|pekon)\s+([a-z\s]+)/i,
+            /profil\s+(?:desa|pekon)\s+([a-z\s]+)/i,
+            /(?:desa|pekon)\s+([a-z\s]+)\s*\|\s*/i
         ];
 
         for (const pattern of patterns) {
@@ -35,10 +38,49 @@ class VillageExtractor {
 
         const title = this.$('title').text();
         if (title) {
-            // Look for "Desa [Name]" in title
-            const titleMatch = title.match(/desa\s+([a-z\s]+)/i);
+            // Look for "Desa [Name]" or "Pekon [Name]" in title
+            const titleMatch = title.match(/(?:desa|pekon)\s+([a-z\s]+)/i);
             if (titleMatch) return titleMatch[1].trim();
             return title.trim();
+        }
+        return null;
+    }
+
+    extractKecamatan() {
+        const patterns = [
+            /kecamatan\s+([^,|<|\n]+?)(?=[,\s]+(?:kabupaten|kab\.|provinsi|prov\.)|$)/i,
+            /kec\.\s+([^,|<|\n]+?)(?=[,\s]+(?:kabupaten|kab\.|provinsi|prov\.)|$)/i
+        ];
+
+        for (const pattern of patterns) {
+            const match = this.html.match(pattern);
+            if (match) return match[1].trim();
+        }
+        return null;
+    }
+
+    extractKabupaten() {
+        const patterns = [
+            /kabupaten\s+([^,|<|\n]+?)(?=[,\s]+(?:provinsi|prov\.|kecamatan|kec\.)|$)/i,
+            /kab\.\s+([^,|<|\n]+?)(?=[,\s]+(?:provinsi|prov\.|kecamatan|kec\.)|$)/i
+        ];
+
+        for (const pattern of patterns) {
+            const match = this.html.match(pattern);
+            if (match) return match[1].trim();
+        }
+        return null;
+    }
+
+    extractProvinsi() {
+        const patterns = [
+            /provinsi\s+([^,|<|\n]+)/i,
+            /prov\.\s+([^,|<|\n]+)/i
+        ];
+
+        for (const pattern of patterns) {
+            const match = this.html.match(pattern);
+            if (match) return match[1].trim().split(/[,\n]/)[0].trim();
         }
         return null;
     }
