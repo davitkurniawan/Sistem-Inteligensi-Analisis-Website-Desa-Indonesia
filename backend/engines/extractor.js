@@ -24,11 +24,11 @@ class VillageExtractor {
 
     extractNamaDesa() {
         const patterns = [
-            /(?:desa|pekon)\s+([a-z\s]+)[,\s]*kecamatan/i,
-            /pemerintah\s+(?:desa|pekon)\s+([a-z\s]+)/i,
-            /kantor\s+(?:desa|pekon)\s+([a-z\s]+)/i,
-            /profil\s+(?:desa|pekon)\s+([a-z\s]+)/i,
-            /(?:desa|pekon)\s+([a-z\s]+)\s*\|\s*/i
+            /(?:desa|pekon|gampong|nagari|kelurahan)\s+([a-z\s]+)[,\s]*(?:kecamatan|kec\.)/i,
+            /pemerintah\s+(?:desa|pekon|gampong|nagari|kelurahan)\s+([a-z\s]+)/i,
+            /kantor\s+(?:desa|pekon|gampong|nagari|kelurahan)\s+([a-z\s]+)/i,
+            /profil\s+(?:desa|pekon|gampong|nagari|kelurahan)\s+([a-z\s]+)/i,
+            /(?:desa|pekon|gampong|nagari|kelurahan)\s+([a-z\s]+)\s*\|\s*/i
         ];
 
         for (const pattern of patterns) {
@@ -38,12 +38,23 @@ class VillageExtractor {
 
         const title = this.$('title').text();
         if (title) {
-            // Look for "Desa [Name]" or "Pekon [Name]" in title
-            const titleMatch = title.match(/(?:desa|pekon)\s+([a-z\s]+)/i);
-            if (titleMatch) return titleMatch[1].trim();
-            return title.trim();
+            // Look for "[Type] [Name]" in title
+            const titleMatch = title.match(/(?:desa|pekon|gampong|nagari|kelurahan)\s+([a-z\s]+)/i);
+            if (titleMatch) return this.cleanVillageName(titleMatch[1]);
+
+            // Fallback: clean the whole title
+            return this.cleanVillageName(title);
         }
         return null;
+    }
+
+    cleanVillageName(name) {
+        if (!name) return null;
+        return name.replace(/^(?:home\s*-\s*|pemerintah\s+|^|kantor\s+|profil\s+)(?:desa|pekon|gampong|nagari|kelurahan)\s+/i, '')
+            .replace(/\s*[|,-].*$/, '') // Remove everything after | - or ,
+            .replace(/\s+website\s+resmi\s*/i, '')
+            .replace(/\s+official\s+website\s*/i, '')
+            .trim();
     }
 
     extractKecamatan() {

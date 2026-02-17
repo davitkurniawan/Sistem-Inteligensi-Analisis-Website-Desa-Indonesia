@@ -46,7 +46,7 @@ const PROVINCE_COORDS = {
 class WilayahSync {
     constructor() {
         this.dbPath = path.join(__dirname, '../database/wilayah/villages_full.json');
-        this.vilData = [];
+        this.villages = [];
         this.fuse = null;
         this.loadDatabase();
     }
@@ -54,8 +54,8 @@ class WilayahSync {
     loadDatabase() {
         try {
             if (fs.existsSync(this.dbPath)) {
-                this.vilData = JSON.parse(fs.readFileSync(this.dbPath, 'utf-8'));
-                this.fuse = new Fuse(this.vilData, {
+                this.villages = JSON.parse(fs.readFileSync(this.dbPath, 'utf-8'));
+                this.fuse = new Fuse(this.villages, {
                     keys: ['desa', 'kecamatan'],
                     threshold: 0.3,
                     includeScore: true
@@ -72,35 +72,50 @@ class WilayahSync {
      * Matches extracted info with Kemendagri database
      */
     matchVillage(extractedInfo) {
-        const { nama_desa, kecamatan, kabupaten, provinsi } = extractedInfo;
-        if (!nama_desa) return { matched: false, reason: 'No village name extracted' };
-        if (!this.fuse) return { matched: false, reason: 'Database not initialized' };
+        if (!extractedInfo.nama_desa) return { matched: false, reason: "No village name extracted" };
 
-        // 1. Initial Search
-        let candidates = this.fuse.search(nama_desa);
+        const searchName = this.normalizeName(extractedInfo.nama_desa);
+        const searchKec = extractedInfo.kecamatan ? this.normalizeName(extractedInfo.kecamatan) : null;
+        const searchKab = extractedInfo.kabupaten ? this.normalizeName(extractedInfo.kabupaten) : null;
+
+        if (!this.villages || this.villages.length === 0) return { matched: false, reason: 'Database not initialized or empty' };
+
+        // Higher threshold for fuzzy matching (more tolerant)
+        const fuse = new Fuse(this.villages, {
+            keys: ['desa'], // Only search by desa name initially
+            includeScore: true,
+            threshold: 0.4, // Increased threshold
+            useExtendedSearch: true
+        });
+
+        // 1. Initial search by village name
+        let results = fuse.search(searchName);
 
         // 2. Filter by extracted context (if available) for better accuracy
-        if (candidates.length > 0) {
-            let filteredResults = candidates;
+        let filteredResults = results;
 
-            if (kecamatan) {
-                const kecLow = kecamatan.toLowerCase();
-                filteredResults = filteredResults.filter(c =>
-                    c.item.kecamatan.toLowerCase().includes(kecLow) || kecLow.includes(c.item.kecamatan.toLowerCase())
-                );
-            }
+        if (searchKec) {
+            filteredResults = filteredResults.filter(c =>
+                this.normalizeName(c.item.kecamatan).includes(searchKec) || searchKec.includes(this.normalizeName(c.item.kecamatan))
+            );
+        }
 
-            if (filteredResults.length === 0 && kabupaten) {
-                // Fallback to kabupaten if kecamatan filtering was too aggressive
-                const kabLow = kabupaten.toLowerCase();
-                filteredResults = candidates.filter(c =>
-                    c.item.kabupaten.toLowerCase().includes(kabLow) || kabLow.includes(c.item.kabupaten.toLowerCase())
-                );
-            }
+        if (filteredResults.length === 0 && searchKab) {
+            // Fallback to kabupaten if kecamatan filtering was too aggressive or not available
+            filteredResults = results.filter(c =>
+                this.normalizeName(c.item.kabupaten).includes(searchKab) || searchKab.includes(this.normalizeName(c.item.kabupaten))
+            );
+        }
 
-            const finalResults = filteredResults.length > 0 ? filteredResults : candidates;
+        const finalResults = filteredResults.length > 0 ? filteredResults : results;
+
+        if (finalResults.length > 0) {
             const bestMatch = finalResults[0].item;
-            const confidence = Math.round((1 - finalResults[0].score) * 100);
+            const score = finalResults[0].score;
+            const confidence = Math.round((1 - score) * 100);
+
+            // Minimum confidence threshold
+            if (confidence < 40) return { matched: false, reason: "Confidence too low" };
 
             const coords = PROVINCE_COORDS[bestMatch.provinsi] || { lat: -4.8555, lng: 105.0300 };
 
@@ -123,7 +138,14 @@ class WilayahSync {
             };
         }
 
-        return { matched: false, reason: 'No confident match found in Kemendagri DB' };
+        return { matched: false, reason: "No confident match found in Kemendagri DB" };
+    }
+
+    normalizeName(name) {
+        if (!name) return "";
+        return name.toLowerCase()
+            .replace(/^(?:desa|kelurahan|pekon|gampong|nagari|kecamatan|kec\.|kabupaten|kab\.|kota)\s+/i, "")
+            .trim();
     }
 }
 
