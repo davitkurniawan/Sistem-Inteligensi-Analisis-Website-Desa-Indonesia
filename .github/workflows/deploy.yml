@@ -45,6 +45,8 @@ jobs:
         run: |
           cd frontend
           npm run build
+        env:
+          VITE_API_URL: https://cms-desa-detector-backend.onrender.com
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact

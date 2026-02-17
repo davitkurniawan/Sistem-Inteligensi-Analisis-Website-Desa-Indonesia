@@ -12,7 +12,14 @@ const COORDS_PATH = path.join(__dirname, 'database/wilayah/villages_coords.json'
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        'https://davitkurniawan.github.io',
+        'http://localhost:5173',
+        'http://localhost:3000'
+    ],
+    credentials: true
+}));
 app.use(express.json());
 
 const wilayahSync = new WilayahSync();

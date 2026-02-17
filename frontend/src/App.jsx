@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 function App() {
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
     const [url, setUrl] = useState('');
     const [isScanning, setIsScanning] = useState(false);
     const [loadingText, setLoadingText] = useState('Memulai analisis...');
@@ -28,7 +29,7 @@ function App() {
             L.control.zoom({ position: 'bottomleft' }).addTo(mapRef.current);
 
             // Fetch and display national village points
-            fetch('http://localhost:3001/api/villages/points')
+            fetch(`${API_URL}/api/villages/points`)
                 .then(res => res.json())
                 .then(points => {
                     const canvasRenderer = L.canvas({ padding: 0.5 });
@@ -142,7 +143,7 @@ function App() {
             ];
 
             // Start the actual scan in background
-            const scanPromise = fetch('http://localhost:3001/api/scan', {
+            const scanPromise = fetch(`${API_URL}/api/scan`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url })
