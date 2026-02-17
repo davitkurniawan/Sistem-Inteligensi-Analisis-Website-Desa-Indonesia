@@ -25,7 +25,31 @@ function App() {
                 maxZoom: 19
             }).addTo(mapRef.current);
 
-            L.control.zoom({ position: 'bottomright' }).addTo(mapRef.current);
+            L.control.zoom({ position: 'topright' }).addTo(mapRef.current);
+
+            // Fetch and display national village points
+            fetch('http://localhost:3001/api/villages/points')
+                .then(res => res.json())
+                .then(points => {
+                    const canvasRenderer = L.canvas({ padding: 0.5 });
+                    const pointMarkers = [];
+
+                    points.forEach(p => {
+                        pointMarkers.push(
+                            L.circleMarker([p[0], p[1]], {
+                                renderer: canvasRenderer,
+                                radius: 0.8,
+                                color: '#3b82f6',
+                                weight: 0,
+                                fillOpacity: 0.4,
+                                interactive: false
+                            })
+                        );
+                    });
+
+                    L.layerGroup(pointMarkers).addTo(mapRef.current);
+                })
+                .catch(err => console.error("Could not load national points:", err));
 
             // Add Lampung Sample Markers
             addSampleMarkers(L);

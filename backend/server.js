@@ -1,17 +1,34 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 const CMSDetector = require('./engines/detector');
 const VillageExtractor = require('./engines/extractor');
 const WilayahSync = require('./integration/wilayah_sync');
 
+const COORDS_PATH = path.join(__dirname, 'database/wilayah/villages_coords.json');
+
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
 
 const wilayahSync = new WilayahSync();
+
+app.get('/api/villages/points', (req, res) => {
+    try {
+        if (fs.existsSync(COORDS_PATH)) {
+            const data = fs.readFileSync(COORDS_PATH, 'utf-8');
+            res.json(JSON.parse(data));
+        } else {
+            res.status(404).json({ error: 'Coordinates data not found' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'Error reading coordinates' });
+    }
+});
 
 app.post('/api/scan', async (req, res) => {
     const { url } = req.body;
