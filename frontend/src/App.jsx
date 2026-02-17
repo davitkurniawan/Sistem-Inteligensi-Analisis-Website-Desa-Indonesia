@@ -340,12 +340,12 @@ function App() {
                 </div>
             </header>
 
-            <main className="flex-1 flex items-center justify-center p-6 relative">
+            <main className="flex-1 flex items-center justify-center p-6 relative pointer-events-none">
                 {/* Input Dialog - Hidden when results are shown */}
                 {!showResults && (
                     <div
                         id="inputDialog"
-                        className={`glass rounded-2xl p-8 max-w-2xl w-full shadow-2xl shadow-black/50 transform transition-all duration-500 ${isScanning ? 'scanning opacity-50' : 'opacity-100 scale-100'}`}
+                        className={`glass rounded-2xl p-8 max-w-2xl w-full shadow-2xl shadow-black/50 transform transition-all duration-500 pointer-events-auto ${isScanning ? 'scanning opacity-50' : 'opacity-100 scale-100'}`}
                     >
                         <div className="text-center mb-8">
                             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-sky-600/20 border border-blue-500/30 mb-4">
@@ -392,7 +392,7 @@ function App() {
                 )}
 
                 {results && (
-                    <div id="resultsPanel" className={`result-card fixed right-0 top-16 bottom-0 w-full md:w-[480px] glass border-l border-slate-700/50 overflow-y-auto z-30 ${showResults ? 'show' : ''}`}>
+                    <div id="resultsPanel" className={`result-card fixed right-0 top-16 bottom-0 w-full md:w-[480px] glass border-l border-slate-700/50 overflow-y-auto z-30 pointer-events-auto ${showResults ? 'show' : ''}`}>
                         <div className="sticky top-0 glass border-b border-slate-700/50 p-6 flex items-center justify-between">
                             <div>
                                 <h3 className="font-bold text-lg">Hasil Deteksi</h3>

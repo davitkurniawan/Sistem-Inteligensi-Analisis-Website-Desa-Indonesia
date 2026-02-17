@@ -180,7 +180,7 @@
 
 /* Map Controls Adjustment */
 .leaflet-bottom.leaflet-left {
-    bottom: 80px !important;
+    bottom: 120px !important;
     left: 20px !important;
     z-index: 1000 !important;
 }
