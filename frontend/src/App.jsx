@@ -17,7 +17,7 @@ function App() {
             mapRef.current = L.map('map', {
                 zoomControl: false,
                 attributionControl: false
-            }).setView([-4.85, 105.0], 8); // Lampung Focus
+            }).setView([-2.5, 118.0], 5); // Indonesia-wide view
 
             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
