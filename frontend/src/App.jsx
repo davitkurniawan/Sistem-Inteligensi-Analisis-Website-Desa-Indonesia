@@ -87,70 +87,101 @@ function App() {
 
         setIsScanning(true);
         setShowResults(false);
+        setResults(null);
 
-        const steps = [
-            "Resolving DNS...",
-            "Analyzing IP geolocation...",
-            "Detecting CMS platform...",
-            "Scanning security vulnerabilities...",
-            "Extracting public information...",
-            "Matching with Kemendagri database...",
-            "Finalizing report..."
-        ];
+        try {
+            // Simulated loading steps for UX
+            const steps = [
+                "Resolving DNS...",
+                "Analyzing IP geolocation...",
+                "Detecting CMS platform...",
+                "Scanning security & extracting profile...",
+                "Matching with Kemendagri DB (Se-Indonesia)...",
+                "Finalizing report..."
+            ];
 
-        for (const step of steps) {
-            setLoadingText(step);
-            await new Promise(r => setTimeout(r, 600));
-        }
+            // Start the actual scan in background
+            const scanPromise = fetch('http://localhost:3001/api/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url })
+            }).then(res => res.json());
 
-        const mockResults = generateMockResults(url);
-        setResults(mockResults);
-        setIsScanning(false);
-        setShowResults(true);
+            // Progress animation
+            for (let i = 0; i < steps.length; i++) {
+                setLoadingText(steps[i]);
+                await new Promise(r => setTimeout(r, 800));
+            }
 
-        // Update Map
-        if (mapRef.current && window.L) {
-            const L = window.L;
-            if (currentMarkerRef.current) mapRef.current.removeLayer(currentMarkerRef.current);
+            const scanData = await scanPromise;
 
-            mapRef.current.flyTo([mockResults.wilayah.lat, mockResults.wilayah.lng], 14, { duration: 2 });
+            if (scanData.error) {
+                alert(`Error: ${scanData.error}`);
+                setIsScanning(false);
+                return;
+            }
 
-            const iconHtml = `
-            <div class="relative">
-                <div class="marker-pulse absolute inset-0 bg-emerald-500 rounded-full opacity-75"></div>
-                <div class="relative w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full border-2 border-white shadow-2xl flex items-center justify-center">
-                    <i class="fas fa-home text-white text-lg"></i>
-                </div>
-            </div>
-        `;
+            setResults(scanData);
+            setIsScanning(false);
+            setShowResults(true);
 
-            const customIcon = L.divIcon({
-                html: iconHtml,
-                className: 'custom-marker',
-                iconSize: [48, 48],
-                iconAnchor: [24, 24]
-            });
+            // Update Map
+            if (mapRef.current && window.L) {
+                const L = window.L;
+                if (currentMarkerRef.current) mapRef.current.removeLayer(currentMarkerRef.current);
 
-            const statusColor = mockResults.security.status === 'safe' ? '#10b981' : '#f59e0b';
-            const popupHtml = `
-                <div style="font-family: 'Inter', sans-serif; padding: 5px; min-width: 180px;">
-                    <h4 style="margin: 0 0 5px 0; color: #1e293b; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">${mockResults.wilayah.nama_desa}</h4>
-                    <div style="font-size: 11px; color: #64748b; line-height: 1.4;">
-                        <p style="margin: 2px 0;"><strong>Kecamatan:</strong> ${mockResults.wilayah.kecamatan}</p>
-                        <p style="margin: 2px 0;"><strong>Kabupaten:</strong> ${mockResults.wilayah.kabupaten}</p>
-                        <p style="margin: 8px 0 0 0; display: flex; align-items: center; gap: 4px;">
-                            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor};"></span>
-                            <strong style="color: ${statusColor}; text-transform: uppercase;">STATUS: ${mockResults.security.status}</strong>
-                        </p>
+                const lat = scanData.region?.coords?.lat || -4.85;
+                const lng = scanData.region?.coords?.lng || 105.0;
+
+                mapRef.current.flyTo([lat, lng], 14, { duration: 2 });
+
+                const iconHtml = `
+                <div class="relative">
+                    <div class="marker-pulse absolute inset-0 bg-emerald-500 rounded-full opacity-75"></div>
+                    <div class="relative w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full border-2 border-white shadow-2xl flex items-center justify-center">
+                        <i class="fas fa-home text-white text-lg"></i>
                     </div>
                 </div>
             `;
 
-            currentMarkerRef.current = L.marker([mockResults.wilayah.lat, mockResults.wilayah.lng], {
-                icon: customIcon
-            }).addTo(mapRef.current)
-                .bindPopup(popupHtml, { closeButton: false, offset: [0, -10] })
-                .openPopup();
+                const customIcon = L.divIcon({
+                    html: iconHtml,
+                    className: 'custom-marker',
+                    iconSize: [48, 48],
+                    iconAnchor: [24, 24]
+                });
+
+                const isSafe = (scanData.security?.score || 100) > 70;
+                const statusColor = isSafe ? '#10b981' : '#f59e0b';
+
+                const villageName = scanData.region?.matched ? scanData.region.nama_wilayah.desa : (scanData.info?.nama_desa || 'Desa Tidak Diketahui');
+                const kec = scanData.region?.matched ? scanData.region.nama_wilayah.kecamatan : (scanData.info?.kecamatan || '-');
+                const kab = scanData.region?.matched ? scanData.region.nama_wilayah.kabupaten : (scanData.info?.kabupaten || '-');
+
+                const popupHtml = `
+                    <div style="font-family: 'Inter', sans-serif; padding: 5px; min-width: 180px;">
+                        <h4 style="margin: 0 0 5px 0; color: #1e293b; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">${villageName}</h4>
+                        <div style="font-size: 11px; color: #64748b; line-height: 1.4;">
+                            <p style="margin: 2px 0;"><strong>Kecamatan:</strong> ${kec}</p>
+                            <p style="margin: 2px 0;"><strong>Kabupaten:</strong> ${kab}</p>
+                            <p style="margin: 8px 0 0 0; display: flex; align-items: center; gap: 4px;">
+                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor};"></span>
+                                <strong style="color: ${statusColor}; text-transform: uppercase;">STATUS: ${isSafe ? 'SAFE' : 'WARNING'}</strong>
+                            </p>
+                        </div>
+                    </div>
+                `;
+
+                currentMarkerRef.current = L.marker([lat, lng], {
+                    icon: customIcon
+                }).addTo(mapRef.current)
+                    .bindPopup(popupHtml, { closeButton: false, offset: [0, -10] })
+                    .openPopup();
+            }
+        } catch (error) {
+            console.error("Scan failed:", error);
+            alert("Gagal melakukan pemindaian. Pastikan backend server berjalan.");
+            setIsScanning(false);
         }
     };
 
@@ -339,8 +370,21 @@ function App() {
                                         <i className="fas fa-map-marker-alt text-emerald-400"></i>
                                     </div>
                                     <div className="flex-1">
-                                        <h5 className="font-semibold text-emerald-100 mb-1">{results.wilayah.nama_desa}</h5>
-                                        <p className="text-sm text-emerald-200/70 leading-relaxed">{results.wilayah.kecamatan}, {results.wilayah.kabupaten}, {results.wilayah.provinsi}</p>
+                                        <h5 className="font-semibold text-emerald-100 mb-1">
+                                            {results.region?.matched ? results.region.nama_wilayah.desa : results.info?.nama_desa || 'Terdeteksi'}
+                                        </h5>
+                                        <p className="text-sm text-emerald-200/70 leading-relaxed">
+                                            {results.region?.matched ? (
+                                                `${results.region.nama_wilayah.kecamatan}, ${results.region.nama_wilayah.kabupaten}, ${results.region.nama_wilayah.provinsi}`
+                                            ) : (
+                                                results.info?.kecamatan ? `${results.info.kecamatan}, ${results.info.kabupaten}` : 'Lokasi luar database'
+                                            )}
+                                        </p>
+                                        {results.region?.matched && (
+                                            <div className="mt-3 pt-3 border-t border-emerald-500/10">
+                                                <p className="text-[10px] text-emerald-500/50 font-mono tracking-wider">KODE WILAYAH: {results.region.kode_wilayah.desa}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -352,7 +396,35 @@ function App() {
                                 </div>
                                 <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/30">
                                     <p className="text-xs text-slate-500 mb-1">Versi CMS</p>
-                                    <p className="text-sm font-medium text-white">{results.cms.version}</p>
+                                    <p className="text-sm font-medium text-white">{results.cms?.version || 'Unknown'}</p>
+                                </div>
+                            </div>
+
+                            {/* Extracted Details */}
+                            <div className="space-y-3">
+                                <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">Profil Desa</h4>
+                                <div className="p-4 rounded-xl bg-slate-800/20 border border-slate-700/30 space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <i className="fas fa-user-tie text-slate-500 w-4"></i>
+                                        <div className="flex-1">
+                                            <p className="text-[10px] text-slate-500 leading-tight">Kepala Desa</p>
+                                            <p className="text-sm text-slate-300">{results.info?.kepala_desa || '-'}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <i className="fas fa-envelope text-slate-500 w-4"></i>
+                                        <div className="flex-1">
+                                            <p className="text-[10px] text-slate-500 leading-tight">Email</p>
+                                            <p className="text-sm text-slate-300">{Array.isArray(results.info?.email) ? results.info.email[0] : results.info?.email || '-'}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <i className="fas fa-users text-slate-500 w-4"></i>
+                                        <div className="flex-1">
+                                            <p className="text-[10px] text-slate-500 leading-tight">Populasi</p>
+                                            <p className="text-sm text-slate-300">{results.info?.jumlah_penduduk ? `${parseInt(results.info.jumlah_penduduk).toLocaleString()} jiwa` : '-'}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
