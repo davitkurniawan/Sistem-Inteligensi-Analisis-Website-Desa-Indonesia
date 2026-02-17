@@ -34,14 +34,30 @@ function App() {
                     const canvasRenderer = L.canvas({ padding: 0.5 });
                     const pointMarkers = [];
 
+                    // Color palette for visual variety based on latitude
+                    const getColorByLatitude = (lat) => {
+                        // Northern Indonesia (Aceh, Sumatra) - Orange/Amber tones
+                        if (lat > 2) return '#f97316'; // orange-500
+                        // Central Indonesia (Java, Kalimantan) - Blue tones
+                        if (lat > -2) return '#3b82f6'; // blue-500
+                        // Southern Indonesia (Bali, NTT, NTB) - Cyan/Teal tones
+                        if (lat > -6) return '#06b6d4'; // cyan-500
+                        // Far South (Java, parts of Sumatra) - Purple tones
+                        if (lat > -8) return '#8b5cf6'; // violet-500
+                        // Southern regions - Pink/Rose tones
+                        return '#ec4899'; // pink-500
+                    };
+
                     points.forEach(p => {
+                        const color = getColorByLatitude(p[0]);
                         pointMarkers.push(
                             L.circleMarker([p[0], p[1]], {
                                 renderer: canvasRenderer,
-                                radius: 0.8,
-                                color: '#3b82f6',
+                                radius: 1.2,
+                                color: color,
+                                fillColor: color,
                                 weight: 0,
-                                fillOpacity: 0.4,
+                                fillOpacity: 0.6,
                                 interactive: false
                             })
                         );
