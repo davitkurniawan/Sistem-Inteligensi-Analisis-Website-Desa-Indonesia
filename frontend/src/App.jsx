@@ -8,6 +8,7 @@ function App() {
     const [results, setResults] = useState(null);
     const mapRef = useRef(null);
     const currentMarkerRef = useRef(null);
+    const boundaryLayerRef = useRef(null);
 
     useEffect(() => {
         // Initialize Leaflet Map
@@ -46,9 +47,9 @@ function App() {
         setUrl('');
         if (mapRef.current) {
             mapRef.current.flyTo([-4.85, 105.0], 8, { duration: 1.5 });
-            if (currentMarkerRef.current) {
-                mapRef.current.removeLayer(currentMarkerRef.current);
-                currentMarkerRef.current = null;
+            if (boundaryLayerRef.current) {
+                mapRef.current.removeLayer(boundaryLayerRef.current);
+                boundaryLayerRef.current = null;
             }
         }
     };
@@ -177,6 +178,34 @@ function App() {
                 }).addTo(mapRef.current)
                     .bindPopup(popupHtml, { closeButton: false, offset: [0, -10] })
                     .openPopup();
+
+                // Fetch and Display Boundary Polygon
+                if (scanData.region?.matched && scanData.region.kode_wilayah.desa) {
+                    try {
+                        if (boundaryLayerRef.current) mapRef.current.removeLayer(boundaryLayerRef.current);
+
+                        const geojsonUrl = `https://raw.githubusercontent.com/fityannugroho/idn-area-boundary/main/data/villages/${scanData.region.kode_wilayah.desa}.geojson`;
+                        const geojsonRes = await fetch(geojsonUrl);
+                        if (geojsonRes.ok) {
+                            const geojsonData = await geojsonRes.json();
+                            boundaryLayerRef.current = L.geoJSON(geojsonData, {
+                                style: {
+                                    color: '#10b981',
+                                    weight: 3,
+                                    opacity: 1,
+                                    fillColor: '#10b981',
+                                    fillOpacity: 0.1,
+                                    dashArray: '5, 5'
+                                }
+                            }).addTo(mapRef.current);
+
+                            // Fit map to boundary if possible
+                            mapRef.current.fitBounds(boundaryLayerRef.current.getBounds(), { padding: [50, 50], duration: 1.5 });
+                        }
+                    } catch (err) {
+                        console.warn("Could not load boundary polygon:", err);
+                    }
+                }
             }
         } catch (error) {
             console.error("Scan failed:", error);
@@ -381,8 +410,14 @@ function App() {
                                             )}
                                         </p>
                                         {results.region?.matched && (
-                                            <div className="mt-3 pt-3 border-t border-emerald-500/10">
-                                                <p className="text-[10px] text-emerald-500/50 font-mono tracking-wider">KODE WILAYAH: {results.region.kode_wilayah.desa}</p>
+                                            <div className="mt-3 pt-3 border-t border-emerald-500/10 flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-[10px] text-emerald-500/50 font-mono tracking-wider">KODE WILAYAH</p>
+                                                    <p className="text-sm font-bold text-emerald-400 font-mono">{results.region.kode_wilayah.desa}</p>
+                                                </div>
+                                                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                                                    <i className="fas fa-barcode text-xs text-emerald-500/50"></i>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
