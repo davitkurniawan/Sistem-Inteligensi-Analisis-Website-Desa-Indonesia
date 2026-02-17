@@ -15,7 +15,7 @@ function App() {
         if (window.L && !mapRef.current) {
             const L = window.L;
             mapRef.current = L.map('map', {
-                zoomControl: true,
+                zoomControl: false,
                 attributionControl: false
             }).setView([-4.85, 105.0], 8); // Lampung Focus
 
@@ -25,7 +25,7 @@ function App() {
                 maxZoom: 19
             }).addTo(mapRef.current);
 
-            L.control.zoom({ position: 'topright' }).addTo(mapRef.current);
+            L.control.zoom({ position: 'bottomleft' }).addTo(mapRef.current);
 
             // Fetch and display national village points
             fetch('http://localhost:3001/api/villages/points')

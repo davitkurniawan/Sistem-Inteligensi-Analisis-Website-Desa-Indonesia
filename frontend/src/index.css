@@ -179,12 +179,15 @@
 }
 
 /* Map Controls Adjustment */
-.leaflet-top.leaflet-right {
-    top: 80px !important;
-    right: 20px !important;
+.leaflet-bottom.leaflet-left {
+    bottom: 80px !important;
+    left: 20px !important;
+    z-index: 1000 !important;
 }
 
 .leaflet-control-zoom {
+    pointer-events: auto !important;
+    cursor: pointer !important;
     border: none !important;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
 }
