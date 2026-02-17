@@ -15,7 +15,7 @@ function App() {
         if (window.L && !mapRef.current) {
             const L = window.L;
             mapRef.current = L.map('map', {
-                zoomControl: false,
+                zoomControl: true,
                 attributionControl: false
             }).setView([-4.85, 105.0], 8); // Lampung Focus
 
@@ -64,7 +64,7 @@ function App() {
         ];
 
         sampleLocations.forEach(loc => {
-            const color = loc.status === 'safe' ? '#10b981' :
+            const color = loc.status === 'safe' ? '#3b82f6' :
                 loc.status === 'warning' ? '#f59e0b' : '#ef4444';
 
             L.circleMarker([loc.lat, loc.lng], {
@@ -138,8 +138,8 @@ function App() {
 
                 const iconHtml = `
                 <div class="relative">
-                    <div class="marker-pulse absolute inset-0 bg-emerald-500 rounded-full opacity-75"></div>
-                    <div class="relative w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full border-2 border-white shadow-2xl flex items-center justify-center">
+                    <div class="marker-pulse absolute inset-0 bg-blue-500 rounded-full opacity-75"></div>
+                    <div class="relative w-12 h-12 bg-gradient-to-br from-blue-500 to-sky-600 rounded-full border-2 border-white shadow-2xl flex items-center justify-center">
                         <i class="fas fa-home text-white text-lg"></i>
                     </div>
                 </div>
@@ -153,7 +153,7 @@ function App() {
                 });
 
                 const isSafe = (scanData.security?.score || 100) > 70;
-                const statusColor = isSafe ? '#10b981' : '#f59e0b';
+                const statusColor = isSafe ? '#3b82f6' : '#f59e0b';
 
                 const villageName = scanData.region?.matched ? scanData.region.nama_wilayah.desa : (scanData.info?.nama_desa || 'Desa Tidak Diketahui');
                 const kec = scanData.region?.matched ? scanData.region.nama_wilayah.kecamatan : (scanData.info?.kecamatan || '-');
@@ -190,10 +190,10 @@ function App() {
                             const geojsonData = await geojsonRes.json();
                             boundaryLayerRef.current = L.geoJSON(geojsonData, {
                                 style: {
-                                    color: '#10b981',
+                                    color: '#3b82f6',
                                     weight: 3,
                                     opacity: 1,
-                                    fillColor: '#10b981',
+                                    fillColor: '#3b82f6',
                                     fillOpacity: 0.1,
                                     dashArray: '5, 5'
                                 }
@@ -293,7 +293,7 @@ function App() {
             {/* Header */}
             <header className="glass border-b border-slate-700/50 px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-sky-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                         <i className="fas fa-satellite-dish text-white text-lg"></i>
                     </div>
                     <div>
@@ -311,8 +311,8 @@ function App() {
                     </button>
                 )}
                 <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                    <span className="text-xs text-slate-300">Database: <span className="text-emerald-400 font-mono">74,986</span> Desa</span>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-slate-300">Database: <span className="text-blue-400 font-mono">74,986</span> Desa</span>
                 </div>
             </header>
 
@@ -324,8 +324,8 @@ function App() {
                         className={`glass rounded-2xl p-8 max-w-2xl w-full shadow-2xl shadow-black/50 transform transition-all duration-500 ${isScanning ? 'scanning opacity-50' : 'opacity-100 scale-100'}`}
                     >
                         <div className="text-center mb-8">
-                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-600/20 border border-emerald-500/30 mb-4">
-                                <i className="fas fa-search-location text-3xl text-emerald-400"></i>
+                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-sky-600/20 border border-blue-500/30 mb-4">
+                                <i className="fas fa-search-location text-3xl text-blue-400"></i>
                             </div>
                             <h2 className="text-2xl font-bold mb-2">Deteksi Website Desa</h2>
                             <p className="text-slate-400 text-sm">Masukkan URL domain website desa untuk analisis mendalam</p>
@@ -347,7 +347,7 @@ function App() {
                                 <button
                                     onClick={startDetection}
                                     disabled={isScanning}
-                                    className="px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-medium rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/25 flex items-center gap-2"
+                                    className="px-6 py-2 bg-gradient-to-r from-blue-500 to-sky-600 hover:from-blue-400 hover:to-sky-500 text-white font-medium rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/25 flex items-center gap-2"
                                 >
                                     {isScanning ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-radar"></i>}
                                     <span>{isScanning ? 'Scanning...' : 'Detect'}</span>
@@ -358,8 +358,8 @@ function App() {
 
                         {isScanning && (
                             <div className="mt-6 text-center">
-                                <div className="flex items-center justify-center gap-3 text-emerald-400">
-                                    <div className="w-5 h-5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin"></div>
+                                <div className="flex items-center justify-center gap-3 text-blue-400">
+                                    <div className="w-5 h-5 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin"></div>
                                     <span className="text-sm font-medium typing">{loadingText}</span>
                                 </div>
                             </div>
@@ -380,29 +380,29 @@ function App() {
                         </div>
                         <div className="p-6 space-y-6">
                             <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-800/30 border border-slate-700/50">
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-emerald-500/20 text-emerald-400`}>
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-blue-500/20 text-blue-400`}>
                                     <i className="fas fa-shield-alt"></i>
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className="px-2 py-0.5 rounded text-xs font-medium badge-safe">AMAN</span>
+                                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-500/20 text-blue-400">AMAN</span>
                                         <span className="text-xs text-slate-500">•</span>
-                                        <span className="text-xs text-emerald-400 font-medium">{results.cms.name}</span>
+                                        <span className="text-xs text-blue-400 font-medium">{results.cms.name}</span>
                                     </div>
                                     <p className="text-sm text-slate-300">Website desa teridentifikasi aman dengan proteksi standar</p>
                                 </div>
                             </div>
 
-                            <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 to-teal-600/10 border border-emerald-500/20">
+                            <div className="p-4 rounded-xl bg-gradient-to-br from-blue-500/10 to-sky-600/10 border border-blue-500/20">
                                 <div className="flex items-start gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                                        <i className="fas fa-map-marker-alt text-emerald-400"></i>
+                                    <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                                        <i className="fas fa-map-marker-alt text-blue-400"></i>
                                     </div>
                                     <div className="flex-1">
-                                        <h5 className="font-semibold text-emerald-100 mb-1">
+                                        <h5 className="font-semibold text-blue-100 mb-1">
                                             {results.region?.matched ? results.region.nama_wilayah.desa : results.info?.nama_desa || 'Terdeteksi'}
                                         </h5>
-                                        <p className="text-sm text-emerald-200/70 leading-relaxed">
+                                        <p className="text-sm text-blue-200/70 leading-relaxed">
                                             {results.region?.matched ? (
                                                 `${results.region.nama_wilayah.kecamatan}, ${results.region.nama_wilayah.kabupaten}, ${results.region.nama_wilayah.provinsi}`
                                             ) : (
@@ -410,13 +410,13 @@ function App() {
                                             )}
                                         </p>
                                         {results.region?.matched && (
-                                            <div className="mt-3 pt-3 border-t border-emerald-500/10 flex items-center justify-between">
+                                            <div className="mt-3 pt-3 border-t border-blue-500/10 flex items-center justify-between">
                                                 <div>
-                                                    <p className="text-[10px] text-emerald-500/50 font-mono tracking-wider">KODE WILAYAH</p>
-                                                    <p className="text-sm font-bold text-emerald-400 font-mono">{results.region.kode_wilayah.desa}</p>
+                                                    <p className="text-[10px] text-blue-500/50 font-mono tracking-wider">KODE WILAYAH</p>
+                                                    <p className="text-sm font-bold text-blue-400 font-mono">{results.region.kode_wilayah.desa}</p>
                                                 </div>
-                                                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                                                    <i className="fas fa-barcode text-xs text-emerald-500/50"></i>
+                                                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                                                    <i className="fas fa-barcode text-xs text-blue-500/50"></i>
                                                 </div>
                                             </div>
                                         )}
@@ -427,7 +427,7 @@ function App() {
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/30">
                                     <p className="text-xs text-slate-500 mb-1">IP Address</p>
-                                    <p className="text-sm font-medium text-emerald-400">{results.ip}</p>
+                                    <p className="text-sm font-medium text-blue-400">{results.ip}</p>
                                 </div>
                                 <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/30">
                                     <p className="text-xs text-slate-500 mb-1">Versi CMS</p>
@@ -470,19 +470,19 @@ function App() {
             <footer className="glass border-t border-slate-700/50 px-6 py-3 flex items-center justify-between text-xs z-20">
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2">
-                        <i className="fas fa-check-circle text-emerald-400"></i>
+                        <i className="fas fa-check-circle text-blue-400"></i>
                         <span className="text-slate-400">Website Terdeteksi: <span className="text-white font-mono">1,247</span></span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <i className="fas fa-shield-alt text-emerald-400"></i>
-                        <span className="text-slate-400">Status Aman: <span className="text-emerald-400 font-mono">892</span></span>
+                        <i className="fas fa-shield-alt text-blue-400"></i>
+                        <span className="text-slate-400">Status Aman: <span className="text-blue-400 font-mono">892</span></span>
                     </div>
                 </div>
 
                 {/* Persistent Branding */}
                 <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity">
                     <span className="text-slate-500">© {new Date().getFullYear()} CMS Desa Detector • </span>
-                    <span className="text-emerald-400 font-medium">
+                    <span className="text-blue-400 font-medium">
                         {atob('Y29weXJpZ2h0IGJ5IA==')}{/* "copyright by " */}
                         {atob('ZGF2aXQua3Vybmlhd2FuQGdtYWlsLmNvbQ==')/* "davit.kurniawan@gmail.com" */}
                     </span>
